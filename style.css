@@ -1,0 +1,22 @@
+body {
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+canvas {
+    border: 2px solid black;
+    display: block;
+    margin: auto;
+}
+
+a {
+    display: block;
+    margin-top: 20px;
+    text-decoration: none;
+    font-size: 18px;
+    color: blue;
+}
+
+a:hover {
+    text-decoration: underline;
+}
