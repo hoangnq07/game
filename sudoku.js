@@ -1,9 +1,11 @@
 const boardSize = 9;
 const board = [];
-let timer;
-let timeLeft = 300; // 5 phút
+let startTime;
 let difficulty = "medium";
-let score = 0;
+let hints = 3;
+let mistakes = 0;
+const maxMistakes = 3;
+const API_URL = "https://script.google.com/macros/s/AKfycbxo69H46quZS6iO9kpBjdVc6fT7eSX639F_wkEG1SMdBvXHiklbmbTsNWPgJ5sPUAPSOA/exec"; // Thay YOUR_SCRIPT_ID bằng ID của bạn
 
 function generateSudoku() {
     document.getElementById("sudoku-board").innerHTML = "";
@@ -13,12 +15,12 @@ function generateSudoku() {
     document.getElementById("sudoku-board").style.gap = "2px";
     document.getElementById("sudoku-board").style.margin = "auto";
     document.getElementById("sudoku-board").style.width = "max-content";
-    
-    clearInterval(timer);
-    timeLeft = difficulty === "easy" ? 600 : difficulty === "hard" ? 180 : 300;
-    updateTimer();
-    startTimer();
-    
+
+    startTime = new Date();
+    hints = 3;
+    mistakes = 0;
+    updateHints();
+
     for (let i = 0; i < boardSize; i++) {
         board[i] = [];
         for (let j = 0; j < boardSize; j++) {
@@ -53,29 +55,47 @@ function handleInput(event) {
 function checkValidity(row, col) {
     let valid = true;
     const value = board[row][col].value;
-    
+
     for (let i = 0; i < boardSize; i++) {
         if ((board[row][i].value === value && i != col) || (board[i][col].value === value && i != row)) {
             valid = false;
         }
     }
-    
+
     board[row][col].style.backgroundColor = valid ? "white" : "red";
-}
-
-function startTimer() {
-    timer = setInterval(() => {
-        timeLeft--;
-        updateTimer();
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            alert("⏰ Hết giờ! Bạn thua!");
+    if (!valid) {
+        mistakes++;
+        if (mistakes >= maxMistakes) {
+            alert("❌ Bạn đã nhập sai 3 lần, bạn thua!");
+            generateSudoku();
         }
-    }, 1000);
+    }
 }
 
-function updateTimer() {
-    document.getElementById("timer").innerText = `⏳ Thời gian còn: ${timeLeft}s`;
+function updateHints() {
+    document.getElementById("hints").innerText = `💡 Gợi ý còn: ${hints}`;
+}
+
+function useHint() {
+    if (hints > 0) {
+        let emptyCells = [];
+        for (let i = 0; i < boardSize; i++) {
+            for (let j = 0; j < boardSize; j++) {
+                if (!board[i][j].value) {
+                    emptyCells.push(board[i][j]);
+                }
+            }
+        }
+        if (emptyCells.length > 0) {
+            let randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+            randomCell.value = Math.floor(Math.random() * 9) + 1;
+            randomCell.disabled = true;
+            hints--;
+            updateHints();
+        }
+    } else {
+        alert("❌ Hết gợi ý!");
+    }
 }
 
 function checkSudoku() {
@@ -93,9 +113,12 @@ function checkSudoku() {
         }
     }
     if (valid) {
-        score += timeLeft;
-        alert(`🎉 Chúc mừng! Bạn đã hoàn thành Sudoku! Điểm số: ${score}`);
-        localStorage.setItem("highscore", Math.max(score, localStorage.getItem("highscore") || 0));
+        let endTime = new Date();
+        let completionTime = Math.round((endTime - startTime) / 1000);
+        alert(`🎉 Chúc mừng! Bạn đã hoàn thành Sudoku! Thời gian: ${completionTime} giây`);
+
+        const playerName = document.getElementById("player-name").value || "Người chơi ẩn danh";
+        saveScore(playerName, completionTime);
     } else {
         alert("❌ Có lỗi, hãy kiểm tra lại!");
     }
@@ -106,4 +129,43 @@ function setDifficulty(level) {
     generateSudoku();
 }
 
-window.onload = generateSudoku;
+// Lưu điểm lên Google Sheets
+async function saveScore(name, time) {
+    try {
+        const response = await fetch(`${API_URL}?action=save&name=${encodeURIComponent(name)}&time=${time}`);
+        const result = await response.json();
+        if (result.status === "success") {
+            alert("✅ Điểm của bạn đã được lưu!");
+            updateLeaderboard();
+        } else {
+            alert("❌ Lưu điểm thất bại, thử lại sau!");
+        }
+    } catch (error) {
+        alert("❌ Lỗi kết nối, kiểm tra API_URL!");
+    }
+}
+
+// Lấy bảng xếp hạng từ Google Sheets
+async function updateLeaderboard() {
+    try {
+        const response = await fetch(`${API_URL}?action=getTopScores`);
+        const scores = await response.json();
+        
+        const leaderboard = document.getElementById("leaderboard");
+        leaderboard.innerHTML = "";
+
+        scores.slice(0, 5).forEach(([name, time], index) => {
+            const listItem = document.createElement("li");
+            listItem.textContent = `🥇 ${index + 1}. ${name} - ${time} giây`;
+            leaderboard.appendChild(listItem);
+        });
+    } catch (error) {
+        alert("❌ Lỗi khi tải bảng xếp hạng!");
+    }
+}
+
+// Khi trang tải, khởi động game và bảng xếp hạng
+window.onload = function () {
+    generateSudoku();
+    updateLeaderboard();
+};

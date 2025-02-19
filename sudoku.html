@@ -8,10 +8,34 @@
 </head>
 <body>
     <h1>Sudoku 🧩</h1>
+
+    <!-- Chọn độ khó -->
+    <label for="difficulty">🎯 Chọn độ khó:</label>
+    <select id="difficulty" onchange="setDifficulty(this.value)">
+        <option value="easy">Dễ</option>
+        <option value="medium" selected>Trung bình</option>
+        <option value="hard">Khó</option>
+    </select>
+
+    <!-- Số gợi ý còn lại -->
+    <p id="hints">💡 Gợi ý còn: 3</p>
+    <button onclick="useHint()">🔍 Dùng gợi ý</button>
+
+    <!-- Bảng Sudoku -->
     <div id="sudoku-board"></div>
+
+    <!-- Nút chức năng -->
     <button onclick="checkSudoku()">✅ Kiểm tra</button>
     <button onclick="generateSudoku()">🔄 Chơi lại</button>
     <a href="index.html">⬅ Quay lại</a>
+
+    <!-- Hiển thị bảng xếp hạng -->
+    <h2>🏆 Bảng xếp hạng</h2>
+    <ul id="leaderboard"></ul>
+
+    <!-- Ô nhập tên người chơi -->
+    <label for="player-name">✍ Nhập tên của bạn:</label>
+    <input type="text" id="player-name" placeholder="Tên của bạn">
 
     <script src="sudoku.js"></script>
 </body>
