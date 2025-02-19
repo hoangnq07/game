@@ -6,8 +6,7 @@ let hints = 3;
 let mistakes = 0;
 const maxMistakes = 3;
 const API_URL = "https://script.google.com/macros/s/AKfycbygIG-i-FudBDFPAFLuXPHpfEVf7RD0x6zLxxIduH6It-qMN4ZL9LQPos-FOV-4uzRCyQ/exec"; // Thay YOUR_SCRIPT_ID bằng ID của bạn
-const { google } = require("googleapis");
-const keys = require("./sudoku-service-account.json"); // JSON Credentials
+
 function generateSudoku() {
     document.getElementById("sudoku-board").innerHTML = "";
 
