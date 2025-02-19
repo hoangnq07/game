@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Danh Sách Game</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <h1>Chào mừng đến với Web Game 🎮</h1>
     <p>Chọn một trò chơi để chơi:</p>
@@ -14,9 +16,23 @@
         <li><a href="sudoku.html">Sudoku 🧩</a></li>
         <!-- Có thể thêm các game khác sau này -->
     </ul>
-    <div id="leaderboard"></div>
+    <h2>Bảng xếp hạng</h2>
+    <ul id="leaderboard"></ul>
 </body>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyBNiq4dkwxO9ZvzJB5YNg_rtgQsQ6KPVhE",
+        authDomain: "sudoku-15e57.firebaseapp.com",
+        projectId: "sudoku-15e57",
+        storageBucket: "sudoku-15e57.firebasestorage.app",
+        messagingSenderId: "779507474162",
+        appId: "1:779507474162:web:a27caae9cd9df8eefa7a6b",
+        measurementId: "G-SFP9ESLNWB"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+</script>
 
 </html>
