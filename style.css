@@ -1,14 +1,11 @@
-body {
-    text-align: center;
-    font-family: Arial, sans-serif;
-}
-
 #sudoku-board {
     display: grid;
     grid-template-columns: repeat(9, 40px);
-    gap: 2px;
-    margin: 20px auto;
+    grid-template-rows: repeat(9, 40px);
+    gap: 0;
+    margin: auto;
     width: max-content;
+    border: 4px solid black;
 }
 
 input {
@@ -16,24 +13,23 @@ input {
     height: 40px;
     text-align: center;
     font-size: 18px;
-    border: 1px solid black;
+    border: 1px solid lightgray;
 }
 
-a {
-    display: block;
-    margin-top: 20px;
-    text-decoration: none;
-    font-size: 18px;
-    color: blue;
+input:disabled {
+    background-color: #e0e0e0;
+    font-weight: bold;
 }
 
-a:hover {
-    text-decoration: underline;
+/* Viền đậm cho từng vùng 3x3 */
+input:nth-child(3n+1) {
+    border-left: 3px solid black;
 }
-
-button {
-    margin: 10px;
-    padding: 10px;
-    font-size: 16px;
-    cursor: pointer;
+input:nth-child(9n+1) {
+    border-left: 3px solid black;
+}
+input:nth-child(n+19):nth-child(-n+27),
+input:nth-child(n+46):nth-child(-n+54),
+input:nth-child(n+73):nth-child(-n+81) {
+    border-top: 3px solid black;
 }

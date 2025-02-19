@@ -9,12 +9,6 @@ const API_URL = "https://script.google.com/macros/s/AKfycbxo69H46quZS6iO9kpBjdVc
 
 function generateSudoku() {
     document.getElementById("sudoku-board").innerHTML = "";
-    document.getElementById("sudoku-board").style.display = "grid";
-    document.getElementById("sudoku-board").style.gridTemplateColumns = "repeat(9, 40px)";
-    document.getElementById("sudoku-board").style.gridTemplateRows = "repeat(9, 40px)";
-    document.getElementById("sudoku-board").style.gap = "2px";
-    document.getElementById("sudoku-board").style.margin = "auto";
-    document.getElementById("sudoku-board").style.width = "max-content";
 
     startTime = new Date();
     hints = 3;
@@ -29,15 +23,15 @@ function generateSudoku() {
             cell.maxLength = 1;
             cell.dataset.row = i;
             cell.dataset.col = j;
-            cell.style.width = "40px";
-            cell.style.height = "40px";
-            cell.style.textAlign = "center";
-            cell.style.fontSize = "18px";
-            cell.style.border = "1px solid black";
+
+            if (j % 3 === 0) cell.style.borderLeft = "3px solid black";
+            if (i % 3 === 0) cell.style.borderTop = "3px solid black";
+            if (i === 8) cell.style.borderBottom = "3px solid black";
+            if (j === 8) cell.style.borderRight = "3px solid black";
+
             cell.addEventListener("input", handleInput);
             if (Math.random() > (difficulty === "easy" ? 0.5 : difficulty === "hard" ? 0.8 : 0.7)) {
-                const randomNumber = Math.floor(Math.random() * 9) + 1;
-                cell.value = randomNumber;
+                cell.value = Math.floor(Math.random() * 9) + 1;
                 cell.disabled = true;
             }
             document.getElementById("sudoku-board").appendChild(cell);
