@@ -6,7 +6,8 @@ let hints = 3;
 let mistakes = 0;
 const maxMistakes = 3;
 const API_URL = "https://script.google.com/macros/s/AKfycbygIG-i-FudBDFPAFLuXPHpfEVf7RD0x6zLxxIduH6It-qMN4ZL9LQPos-FOV-4uzRCyQ/exec"; // Thay YOUR_SCRIPT_ID bằng ID của bạn
-
+const { google } = require("googleapis");
+const keys = require("./sudoku-service-account.json"); // JSON Credentials
 function generateSudoku() {
     document.getElementById("sudoku-board").innerHTML = "";
 
@@ -158,23 +159,53 @@ async function updateLeaderboard() {
     }
 }
 async function getTopScores() {
+    const SHEET_ID = "H4d56G9NAmQYn3OclSMqOcXgIfLBQKB4fr009XfglTI"; // Thay bằng ID của Google Sheets
+    const SHEET_NAME = "Scores"; // Tên sheet (ví dụ: "Sheet1")
+    const API_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
     try {
-        const response = await fetch("YOUR_DEPLOYED_URL?action=getTopScores");
-        const scores = await response.json();
-        console.log("🏆 Top 5 người chơi nhanh nhất:", scores);
+        const response = await fetch(API_URL);
+        const text = await response.text();
+        const json = JSON.parse(text.substring(47, text.length - 2)); // Xử lý JSON trả về
 
-        let leaderboard = document.getElementById("leaderboard");
-        leaderboard.innerHTML = "<h2>🏆 Bảng Xếp Hạng</h2>";
+        // Lấy dữ liệu từ bảng
+        const rows = json.table.rows.map(row => ({
+            name: row.c[0].v, 
+            score: row.c[1].v
+        }));
 
-        scores.forEach((player, index) => {
-            leaderboard.innerHTML += `<p>${index + 1}. ${player.name} - ${player.time}s</p>`;
-        });
+        console.log("🏆 Top 5 người chơi nhanh nhất:", rows.slice(0, 5));
     } catch (error) {
-        console.error("Lỗi lấy dữ liệu:", error);
+        console.error("❌ Lỗi khi lấy dữ liệu:", error);
     }
 }
 
+// Gọi API để kiểm tra kết quả
 getTopScores();
+async function saveScore(name, time) {
+    const client = new google.auth.JWT(
+        keys.client_email,
+        null,
+        keys.private_key,
+        ["https://www.googleapis.com/auth/spreadsheets"]
+    );
+
+    const sheets = google.sheets({ version: "v4", auth: client });
+    const spreadsheetId = "YOUR_SHEET_ID"; // Thay bằng ID Google Sheets của bạn
+    const range = "Sheet1!A:B"; // Cột A: Tên, Cột B: Thời gian
+
+    await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range,
+        valueInputOption: "RAW",
+        requestBody: {
+            values: [[name, time]],
+        },
+    });
+
+    console.log("✅ Điểm số đã được lưu!");
+}
+aveScore("Hoàng", 120); // Gọi hàm để lưu điểm
 // Khi trang tải, khởi động game và bảng xếp hạng
 window.onload = function () {
     generateSudoku();
