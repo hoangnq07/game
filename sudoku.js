@@ -5,7 +5,7 @@ let difficulty = "medium";
 let hints = 3;
 let mistakes = 0;
 const maxMistakes = 3;
-const API_URL = "https://script.google.com/macros/s/AKfycbxo69H46quZS6iO9kpBjdVc6fT7eSX639F_wkEG1SMdBvXHiklbmbTsNWPgJ5sPUAPSOA/exec"; // Thay YOUR_SCRIPT_ID bằng ID của bạn
+const API_URL = "https://script.google.com/macros/s/AKfycbygIG-i-FudBDFPAFLuXPHpfEVf7RD0x6zLxxIduH6It-qMN4ZL9LQPos-FOV-4uzRCyQ/exec"; // Thay YOUR_SCRIPT_ID bằng ID của bạn
 
 function generateSudoku() {
     document.getElementById("sudoku-board").innerHTML = "";
@@ -157,7 +157,24 @@ async function updateLeaderboard() {
         alert("❌ Lỗi khi tải bảng xếp hạng!");
     }
 }
+async function getTopScores() {
+    try {
+        const response = await fetch("YOUR_DEPLOYED_URL?action=getTopScores");
+        const scores = await response.json();
+        console.log("🏆 Top 5 người chơi nhanh nhất:", scores);
 
+        let leaderboard = document.getElementById("leaderboard");
+        leaderboard.innerHTML = "<h2>🏆 Bảng Xếp Hạng</h2>";
+
+        scores.forEach((player, index) => {
+            leaderboard.innerHTML += `<p>${index + 1}. ${player.name} - ${player.time}s</p>`;
+        });
+    } catch (error) {
+        console.error("Lỗi lấy dữ liệu:", error);
+    }
+}
+
+getTopScores();
 // Khi trang tải, khởi động game và bảng xếp hạng
 window.onload = function () {
     generateSudoku();
