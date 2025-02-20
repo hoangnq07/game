@@ -3,7 +3,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyBNiq4dkwxO9ZvzJB5YNg_rtgQsQ6KPVhE",
     authDomain: "sudoku-15e57.firebaseapp.com",
     projectId: "sudoku-15e57",
-    storageBucket: "sudoku-15e57.firebasestorage.app",
+    storageBucket: "sudoku-15e57.appspot.com",
     messagingSenderId: "779507474162",
     appId: "1:779507474162:web:a27caae9cd9df8eefa7a6b",
     measurementId: "G-SFP9ESLNWB"
@@ -20,6 +20,14 @@ let difficulty = "medium";
 let hints = 3;
 let mistakes = 0;
 const maxMistakes = 3;
+let fullBoard = []; // 🔥 Khai báo toàn cục
+// ✅ Kiểm tra kết nối Firebase
+db.collection("test").add({
+    message: "Hello from UMD!",
+    timestamp: new Date()
+})
+    .then(() => console.log("✅ Firebase UMD hoạt động!"))
+    .catch((error) => console.error("❌ Lỗi kết nối:", error));
 
 // 🔥 Tạo Sudoku hợp lệ
 function createValidSudokuBoard() {
@@ -65,9 +73,10 @@ function generateSudoku() {
     hints = 3;
     mistakes = 0;
     updateHints();
+    updateMistakes();
 
-    let fullBoard = createValidSudokuBoard();
-    let sudokuBoard = removeNumbers(fullBoard);
+    fullBoard = createValidSudokuBoard(); // 🔥 Lưu lại bảng hoàn chỉnh
+    let sudokuBoard = removeNumbers(fullBoard); // Tạo bản Sudoku hiển thị
 
     for (let i = 0; i < boardSize; i++) {
         board[i] = [];
@@ -77,11 +86,6 @@ function generateSudoku() {
             cell.maxLength = 1;
             cell.dataset.row = i;
             cell.dataset.col = j;
-
-            if (j % 3 === 0) cell.style.borderLeft = "3px solid black";
-            if (i % 3 === 0) cell.style.borderTop = "3px solid black";
-            if (i === 8) cell.style.borderBottom = "3px solid black";
-            if (j === 8) cell.style.borderRight = "3px solid black";
 
             cell.addEventListener("input", handleInput);
 
@@ -95,21 +99,103 @@ function generateSudoku() {
         }
     }
 }
-
-// 🎯 Hàm xóa số theo độ khó
+// 🎲 Xóa số theo độ khó (Fix)
 function removeNumbers(board) {
-    let boardCopy = board.map(row => [...row]);
+    const boardCopy = board.map(row => [...row]);
     let attempts = difficulty === "easy" ? 30 : difficulty === "medium" ? 40 : 50;
+    let removed = 0;
 
-    while (attempts > 0) {
+    while (removed < attempts) {
         let row = Math.floor(Math.random() * boardSize);
         let col = Math.floor(Math.random() * boardSize);
+
         if (boardCopy[row][col] !== 0) {
             boardCopy[row][col] = 0;
-            attempts--;
+            removed++;
         }
     }
     return boardCopy;
+}
+
+// ✅ Cải thiện handleInput (Kiểm tra dữ liệu nhập vào)
+function handleInput(event) {
+    const cell = event.target;
+    const { row, col } = cell.dataset;
+    const value = cell.value.replace(/[^1-9]/, ""); // Chỉ chấp nhận số 1-9
+    cell.value = value;
+
+    if (value === "") return; // Bỏ qua nếu ô bị xóa
+
+    // Kiểm tra trùng lặp trong hàng, cột và ô 3x3
+    let valid = true;
+    for (let i = 0; i < boardSize; i++) {
+        if ((board[row][i].value === value && i != col) || 
+            (board[i][col].value === value && i != row)) {
+            valid = false;
+        }
+    }
+
+    const boxRowStart = Math.floor(row / 3) * 3;
+    const boxColStart = Math.floor(col / 3) * 3;
+    for (let r = boxRowStart; r < boxRowStart + 3; r++) {
+        for (let c = boxColStart; c < boxColStart + 3; c++) {
+            if (board[r][c].value === value && (r != row || c != col)) {
+                valid = false;
+            }
+        }
+    }
+
+    // Nếu sai, tăng số lỗi và đổi màu ô
+    if (!valid) {
+        cell.style.backgroundColor = "red";
+        mistakes++;
+        updateMistakes();
+
+        if (mistakes >= maxMistakes) {
+            alert("❌ Bạn đã vượt quá số lỗi cho phép. Trò chơi kết thúc!");
+            generateSudoku();
+        }
+    } else {
+        cell.style.backgroundColor = "white";
+    }
+
+    // Kiểm tra nếu bảng đã đầy đủ
+    if (isBoardFull()) {
+        if (isBoardCorrect()) {
+            let endTime = new Date();
+            let completionTime = Math.round((endTime - startTime) / 1000);
+            alert(`🎉 Hoàn thành trong ${completionTime} giây!`);
+
+            const playerName = document.getElementById("player-name").value || "Ẩn danh";
+            saveScore(playerName, completionTime);
+            loadLeaderboard();
+        } else {
+            alert("❌ Có lỗi trong bảng. Kiểm tra lại!");
+        }
+    }
+}
+
+// Kiểm tra xem bảng đã đầy đủ chưa
+function isBoardFull() {
+    for (let i = 0; i < boardSize; i++) {
+        for (let j = 0; j < boardSize; j++) {
+            if (board[i][j].value === "") return false;
+        }
+    }
+    return true;
+}
+
+// Kiểm tra xem bảng có đúng không dựa trên fullBoard
+function isBoardCorrect() {
+    for (let i = 0; i < boardSize; i++) {
+        for (let j = 0; j < boardSize; j++) {
+            if (parseInt(board[i][j].value) !== fullBoard[i][j]) return false;
+        }
+    }
+    return true;
+}
+function updateMistakes() {
+    document.getElementById("mistakes").innerText = `❌ Lỗi sai: ${mistakes}/${maxMistakes}`;
 }
 
 // 🏆 Lưu điểm lên Firestore
@@ -137,7 +223,7 @@ function loadLeaderboard() {
     .catch(error => console.error("❌ Lỗi khi tải bảng xếp hạng:", error));
 }
 
-// 🔍 Kiểm tra kết quả Sudoku
+// ✅ Kiểm tra kết quả Sudoku
 function checkSudoku() {
     let valid = true;
     for (let i = 0; i < boardSize; i++) {
@@ -165,12 +251,57 @@ function checkSudoku() {
         alert("❌ Có lỗi trong bảng, kiểm tra lại!");
     }
 }
+// 🎯 Hàm Gợi Ý
+function giveHint() {
+    if (hints <= 0) {
+        alert("❌ Hết gợi ý!");
+        return;
+    }
+
+    if (!fullBoard || fullBoard.length === 0) {
+        alert("⚠️ Bảng Sudoku chưa được tạo!");
+        return;
+    }
+
+    // Tìm ô trống đầu tiên để điền gợi ý
+    for (let row = 0; row < boardSize; row++) {
+        for (let col = 0; col < boardSize; col++) {
+            const cell = board[row][col];
+            if (cell.value === "") {
+                // Điền số từ fullBoard
+                cell.value = fullBoard[row][col];
+                cell.disabled = true; 
+                cell.style.backgroundColor = "#d0ffd0"; // Màu gợi ý
+
+                hints--;
+                updateHints();
+
+                // Kiểm tra nếu hoàn thành sau gợi ý
+                if (isBoardFull() && isBoardCorrect()) {
+                    let endTime = new Date();
+                    let completionTime = Math.round((endTime - startTime) / 1000);
+                    alert(`🎉 Hoàn thành trong ${completionTime} giây!`);
+                    const playerName = document.getElementById("player-name").value || "Ẩn danh";
+                    saveScore(playerName, completionTime);
+                }
+
+                return; // Chỉ gợi ý 1 ô mỗi lần
+            }
+        }
+    }
+
+    alert("✔️ Không còn ô trống nào để gợi ý!");
+}
+
 
 // ⚡ Cập nhật gợi ý
 function updateHints() {
     document.getElementById("hints").innerText = `💡 Gợi ý còn: ${hints}`;
 }
-
+function changeDifficulty() {
+    difficulty = document.getElementById("difficulty").value;
+    generateSudoku(); // Tạo lại bàn sau khi đổi độ khó
+}
 // 🔥 Tải trò chơi và bảng xếp hạng khi mở trang
 window.onload = function () {
     generateSudoku();

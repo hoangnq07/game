@@ -1,11 +1,11 @@
 #sudoku-board {
     display: grid;
-    grid-template-columns: repeat(9, 40px);
-    grid-template-rows: repeat(9, 40px);
+    grid-template-columns: repeat(9, 40px); /* 9 cột */
+    grid-template-rows: repeat(9, 40px);    /* 9 hàng */
     gap: 0;
     margin: auto;
     width: max-content;
-    border: 4px solid black;
+    border: 4px solid black; /* Viền ngoài cùng */
 }
 
 input {
@@ -14,6 +14,7 @@ input {
     text-align: center;
     font-size: 18px;
     border: 1px solid lightgray;
+    box-sizing: border-box;
 }
 
 input:disabled {
@@ -21,15 +22,30 @@ input:disabled {
     font-weight: bold;
 }
 
-/* Viền đậm cho từng vùng 3x3 */
-input:nth-child(3n+1) {
+/* ✅ Đường viền đậm bên trái cho cột đầu mỗi khối 3x3 */
+#sudoku-board input:nth-child(9n+1),
+#sudoku-board input:nth-child(9n-2),
+#sudoku-board input:nth-child(9n-5) {
     border-left: 3px solid black;
 }
-input:nth-child(9n+1) {
-    border-left: 3px solid black;
+
+/* ✅ Đường viền đậm bên phải cho cột cuối mỗi khối 3x3 */
+#sudoku-board input:nth-child(9n) {
+    border-right: 3px solid black;
 }
-input:nth-child(n+19):nth-child(-n+27),
-input:nth-child(n+46):nth-child(-n+54),
-input:nth-child(n+73):nth-child(-n+81) {
+
+/* ✅ Đường viền đậm trên cùng */
+#sudoku-board input:nth-child(-n+9) {
     border-top: 3px solid black;
+}
+
+/* ✅ Đường viền đậm dưới cùng */
+#sudoku-board input:nth-child(n+73) {
+    border-bottom: 3px solid black;
+}
+
+/* ✅ Đường viền ngang đậm sau mỗi 3 hàng */
+#sudoku-board input:nth-child(n+19):nth-child(-n+27),
+#sudoku-board input:nth-child(n+46):nth-child(-n+54) {
+    border-bottom: 3px solid black;
 }
