@@ -27,15 +27,15 @@ for (let key in images) {
 
 // 🐦 Cài đặt game
 const CONFIG = {
-    birdX: 50,
-    gravity: 0.25,
-    jumpStrength: 5,
-    pipeGap: 120,
-    pipeSpeed: 2,
-    pipeFrequency: 90 // frame
+    birdX: 50,                 // Vị trí X cố định của chim
+    gravity: 0.15,             // 🔽 Giảm tốc độ rơi
+    jumpStrength: 4,           // 💥 Độ mạnh khi nhảy
+    pipeGap: 120,              // Khoảng cách giữa ống trên và dưới
+    pipeSpeed: 2,              // Tốc độ di chuyển ống
+    pipeFrequency: 90          // Tần suất sinh ống mới (theo frame)
 };
 
-let birdY = canvas.height / 2;
+let birdY = canvas.height / 2;  // 🎯 Bắt đầu từ giữa màn hình
 let birdVelocity = 0;
 let score = 0;
 let frameCount = 0;
@@ -53,7 +53,7 @@ document.addEventListener("keydown", (e) => {
 
 // 🎯 Bắt đầu game
 function startGame() {
-    pipes.push({ x: canvas.width, y: randomPipeY() });
+    pipes.push({ x: canvas.width, y: randomPipeY(), passed: false });
     draw();
 }
 
@@ -79,8 +79,8 @@ function draw() {
         pipe.x -= CONFIG.pipeSpeed;
 
         // Thêm ống mới khi cần
-        if (pipe.x === canvas.width - CONFIG.pipeFrequency) {
-            pipes.push({ x: canvas.width, y: randomPipeY() });
+        if (frameCount % CONFIG.pipeFrequency === 0) {
+            pipes.push({ x: canvas.width, y: randomPipeY(), passed: false });
         }
 
         // ✅ Kiểm tra va chạm
@@ -94,9 +94,10 @@ function draw() {
             gameOver = true;
         }
 
-        // 🎉 Cộng điểm khi vượt qua ống
-        if (pipe.x + assets.pipeUp.width === CONFIG.birdX) {
+        // 🎉 Cộng điểm khi chim vượt qua ống
+        if (!pipe.passed && pipe.x + assets.pipeUp.width < CONFIG.birdX) {
             score++;
+            pipe.passed = true;
         }
     }
 
@@ -141,7 +142,7 @@ function restartGame() {
     pipes = [];
     frameCount = 0;
     gameOver = false;
-    pipes.push({ x: canvas.width, y: randomPipeY() });
+    pipes.push({ x: canvas.width, y: randomPipeY(), passed: false });
     draw();
 }
 
