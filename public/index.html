@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>💬 Chat Online</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>💬 Chat Online Realtime</h1>
+
+    <div id="chat-container">
+        <div id="messages"></div>
+
+        <input type="text" id="username" placeholder="Nhập tên của bạn" />
+        <input type="text" id="message" placeholder="Nhập tin nhắn..." />
+        <button onclick="sendMessage()">Gửi</button>
+    </div>
+
+    <!-- 📡 Kết nối Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
