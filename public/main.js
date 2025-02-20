@@ -1,5 +1,5 @@
 // 📡 Kết nối tới WebSocket Server
-const socket = io('http://localhost:3000'); // 👉 Đổi sang link Render sau khi deploy
+const socket = io('https://chat-online-nhyp.onrender.com'); // 👉 Đổi sang link Render sau khi deploy
 
 const messagesDiv = document.getElementById('messages');
 const usernameInput = document.getElementById('username');
